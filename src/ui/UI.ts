@@ -8,6 +8,7 @@ import { CreatureRenderer } from '../creatures/CreatureRenderer';
 import { Biome, BIOME_INFO } from '../world/TerrainGenerator';
 import { ThemeManager } from './themes';
 import { Dashboard } from './Dashboard';
+import { Minimap } from './Minimap';
 import type { WorldSize } from '../main';
 
 let speciesIdCounter = 0;
@@ -27,6 +28,7 @@ export class UI {
   private settingsPanel!: HTMLElement;
   private inspectPanel!: HTMLElement;
   private dashboard!: Dashboard;
+  private minimap!: Minimap;
   private elements: HTMLElement[] = [];
   private intervals: number[] = [];
 
@@ -52,11 +54,27 @@ export class UI {
     this.createSettingsPanel();
     this.createInspectPanel();
     this.dashboard = new Dashboard(simEngine);
+    this.minimap = new Minimap(world);
+    this.minimap.getCreatures = () => this.simEngine.creatures;
+    this.minimap.onClickPosition = (x, z) => {
+      this.cameraController.target.set(x, 5, z);
+    };
     this.createSpeciesList();
     this.createBottomBar();
     this.addDefaultSpecies();
 
     this.editor.onCreatureSelected = () => this.showInspectPanel();
+
+    // Keyboard shortcuts
+    const keyHandler = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'SELECT') return;
+      if (e.key === 'm' || e.key === 'M') this.minimap.toggle();
+      if (e.key === 'd' || e.key === 'D') this.dashboard.toggle();
+      if (e.key === ' ') { e.preventDefault(); this.simEngine.playing = !this.simEngine.playing; }
+    };
+    window.addEventListener('keydown', keyHandler);
+    // Store for cleanup
+    (this as any)._keyHandler = keyHandler;
   }
 
   /** Remove all DOM elements created by this UI instance. */
@@ -64,6 +82,8 @@ export class UI {
     for (const el of this.elements) el.remove();
     for (const id of this.intervals) clearInterval(id);
     this.dashboard?.dispose();
+    this.minimap?.dispose();
+    if ((this as any)._keyHandler) window.removeEventListener('keydown', (this as any)._keyHandler);
     this.elements = [];
     this.intervals = [];
   }

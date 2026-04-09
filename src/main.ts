@@ -9,6 +9,8 @@ import { CreatureRenderer } from './creatures/CreatureRenderer';
 import { UI } from './ui/UI';
 import { ThemeManager } from './ui/themes';
 
+export const VERSION = '0.3.0';
+
 // ─── Theme ───
 const themeManager = new ThemeManager();
 
@@ -126,7 +128,7 @@ function showWorldPicker(): void {
   overlay.id = 'world-picker';
   overlay.innerHTML = `
     <div class="picker-title">WorldVox</div>
-    <div class="picker-subtitle">Choose a starting world</div>
+    <div class="picker-subtitle">v${VERSION} — Choose a starting world</div>
     <div class="picker-sizes"></div>
     <div class="picker-grid"></div>
   `;

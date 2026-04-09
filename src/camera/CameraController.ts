@@ -43,7 +43,7 @@ export class CameraController {
   private camera: THREE.PerspectiveCamera;
   private domElement: HTMLElement;
 
-  private target = new THREE.Vector3(32, 5, 32);
+  target = new THREE.Vector3(32, 5, 32);
   private spherical = new THREE.Spherical(60, Math.PI * 0.3, Math.PI * 0.25);
 
   private baseRotateSpeed = 0.003;
