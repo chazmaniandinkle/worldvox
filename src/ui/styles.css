@@ -1,0 +1,591 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+}
+
+canvas {
+  display: block;
+}
+
+/* ─── Toolbar ─── */
+.toolbar {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  background: rgba(20, 20, 40, 0.9);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.toolbar button {
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ccc;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.toolbar button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+.toolbar button.active {
+  background: rgba(100, 140, 255, 0.3);
+  border-color: rgba(100, 140, 255, 0.5);
+  color: white;
+}
+
+/* ─── Block Palette ─── */
+.block-palette {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: 4px;
+  padding: 6px;
+  background: rgba(20, 20, 40, 0.9);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.block-palette.visible {
+  display: flex;
+}
+
+.block-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.block-swatch:hover {
+  transform: scale(1.15);
+}
+
+.block-swatch.active {
+  border-color: white;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.block-swatch[title]::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  white-space: nowrap;
+  color: #aaa;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.block-swatch:hover[title]::after {
+  opacity: 1;
+}
+
+/* ─── Creature Creator Panel ─── */
+.creature-panel {
+  position: fixed;
+  right: 12px;
+  top: 12px;
+  width: 260px;
+  background: rgba(20, 20, 40, 0.95);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  display: none;
+}
+
+.creature-panel.open {
+  display: block;
+}
+
+.creature-panel h3 {
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.creature-panel label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #888;
+}
+
+.creature-panel input[type='text'],
+.creature-panel input[type='color'] {
+  width: 100%;
+  padding: 6px 8px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 13px;
+}
+
+.creature-panel input[type='color'] {
+  height: 32px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.creature-panel input[type='range'] {
+  width: 100%;
+  margin-bottom: 10px;
+  accent-color: #648cff;
+}
+
+.creature-panel select {
+  width: 100%;
+  padding: 6px 8px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  background: rgba(30, 30, 50, 0.9);
+  color: white;
+  font-size: 13px;
+}
+
+.btn-create {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(80, 200, 120, 0.3);
+  border: 1px solid rgba(80, 200, 120, 0.5);
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.btn-create:hover {
+  background: rgba(80, 200, 120, 0.45);
+}
+
+/* ─── Species List ─── */
+.species-list {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  width: 180px;
+  background: rgba(20, 20, 40, 0.9);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.species-list h3 {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.species-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 2px;
+  transition: background 0.15s;
+}
+
+.species-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.species-item.active {
+  background: rgba(100, 140, 255, 0.2);
+}
+
+.species-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.species-name {
+  font-size: 13px;
+  flex: 1;
+}
+
+.species-count {
+  font-size: 11px;
+  color: #555;
+}
+
+/* ─── Bottom Bar ─── */
+.bottom-bar {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(20, 20, 40, 0.9);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  font-size: 13px;
+}
+
+.bottom-bar button {
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ccc;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.bottom-bar button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.bottom-bar button.active {
+  background: rgba(100, 140, 255, 0.3);
+  border-color: rgba(100, 140, 255, 0.5);
+  color: white;
+}
+
+.bottom-bar .stat {
+  color: #888;
+  font-size: 12px;
+}
+
+.bottom-bar .divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ─── Slider Rows ─── */
+.slider-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.slider-value {
+  font-size: 12px;
+  color: #aaa;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* ─── Brush Info ─── */
+.brush-info {
+  font-size: 11px;
+  color: #666;
+  padding: 2px 8px;
+}
+
+/* ─── Scrollbar ─── */
+.creature-panel::-webkit-scrollbar {
+  width: 4px;
+}
+.creature-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.creature-panel::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+/* ─── Checkboxes in panels ─── */
+.creature-panel label:has(input[type='checkbox']) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.creature-panel input[type='checkbox'] {
+  accent-color: #648cff;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+/* ─── Inspect Panel ─── */
+.inspect-panel {
+  position: fixed;
+  left: 12px;
+  bottom: 60px;
+  width: 240px;
+  background: rgba(20, 20, 40, 0.95);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 14px;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  display: none;
+}
+
+.inspect-panel.open {
+  display: block;
+}
+
+.inspect-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.inspect-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.inspect-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #eee;
+}
+
+.inspect-state {
+  font-size: 11px;
+  color: #888;
+  margin-top: 1px;
+}
+
+.inspect-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.inspect-close:hover {
+  color: #ccc;
+}
+
+.inspect-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.inspect-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inspect-bar-label {
+  font-size: 11px;
+  color: #888;
+  width: 42px;
+  flex-shrink: 0;
+}
+
+.inspect-bar-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.inspect-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.2s;
+}
+
+.inspect-bar-val {
+  font-size: 11px;
+  color: #aaa;
+  min-width: 45px;
+  text-align: right;
+}
+
+.inspect-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inspect-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.inspect-stat span:first-child {
+  color: #666;
+}
+
+.inspect-stat span:last-child {
+  color: #bbb;
+}
+
+/* ─── World Picker ─── */
+#world-picker {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(10, 10, 25, 0.97);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(20px);
+}
+
+.picker-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #eee;
+  margin-bottom: 4px;
+  letter-spacing: 2px;
+}
+
+.picker-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 32px;
+}
+
+.picker-sizes {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.picker-size-btn {
+  padding: 6px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #999;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+
+.picker-size-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ccc;
+}
+
+.picker-size-btn.active {
+  background: rgba(100, 140, 255, 0.2);
+  border-color: rgba(100, 140, 255, 0.4);
+  color: white;
+}
+
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  max-width: 620px;
+}
+
+.picker-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 18px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 130px;
+}
+
+.picker-card:hover {
+  background: rgba(100, 140, 255, 0.12);
+  border-color: rgba(100, 140, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.picker-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.picker-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ddd;
+  margin-bottom: 4px;
+}
+
+.picker-desc {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.3;
+}
+
+/* ─── Separator ─── */
+.panel-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 12px 0;
+}
