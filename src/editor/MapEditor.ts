@@ -3,7 +3,7 @@ import { World } from '../world/World';
 import { WorldRenderer } from '../world/WorldRenderer';
 import { BlockType, isSolid } from '../world/BlockTypes';
 import { SimEngine } from '../simulation/SimEngine';
-import { CreatureTemplate } from '../creatures/Creature';
+import { CreatureConfig } from '../simulation/SimConfig';
 import { CreatureRenderer } from '../creatures/CreatureRenderer';
 import { placeTree } from '../world/TerrainGenerator';
 
@@ -13,7 +13,7 @@ export class MapEditor {
   tool: Tool = 'paint';
   blockType: BlockType = BlockType.GRASS;
   brushSize = 1;
-  selectedSpecies: CreatureTemplate | null = null;
+  selectedSpecies: CreatureConfig | null = null;
   onBrushSizeChange?: (size: number) => void;
   onCreatureSelected?: () => void;
   creatureRenderer: CreatureRenderer | null = null;

@@ -2,11 +2,12 @@ import { MapEditor, Tool } from '../editor/MapEditor';
 import { SimEngine } from '../simulation/SimEngine';
 import { World } from '../world/World';
 import { BlockType, BLOCK_COLORS, BLOCK_NAMES, PAINTABLE_BLOCKS } from '../world/BlockTypes';
-import { CreatureTemplate } from '../creatures/Creature';
+import { CreatureConfig, creatureConfigFromSimple } from '../simulation/SimConfig';
 import { CameraController, CameraSettings } from '../camera/CameraController';
 import { CreatureRenderer } from '../creatures/CreatureRenderer';
 import { Biome, BIOME_INFO } from '../world/TerrainGenerator';
 import { ThemeManager } from './themes';
+import { Dashboard } from './Dashboard';
 import type { WorldSize } from '../main';
 
 let speciesIdCounter = 0;
@@ -25,6 +26,7 @@ export class UI {
   private creaturePanel!: HTMLElement;
   private settingsPanel!: HTMLElement;
   private inspectPanel!: HTMLElement;
+  private dashboard!: Dashboard;
   private elements: HTMLElement[] = [];
   private intervals: number[] = [];
 
@@ -49,6 +51,7 @@ export class UI {
     this.createCreaturePanel();
     this.createSettingsPanel();
     this.createInspectPanel();
+    this.dashboard = new Dashboard(simEngine);
     this.createSpeciesList();
     this.createBottomBar();
     this.addDefaultSpecies();
@@ -60,6 +63,7 @@ export class UI {
   dispose(): void {
     for (const el of this.elements) el.remove();
     for (const id of this.intervals) clearInterval(id);
+    this.dashboard?.dispose();
     this.elements = [];
     this.intervals = [];
   }
@@ -119,6 +123,16 @@ export class UI {
       this.creaturePanel.classList.remove('open');
     });
     bar.appendChild(gearBtn);
+
+    // Dashboard toggle
+    const dashBtn = document.createElement('button');
+    dashBtn.textContent = '📊';
+    dashBtn.addEventListener('click', () => {
+      this.dashboard.toggle();
+      this.creaturePanel.classList.remove('open');
+      this.settingsPanel.classList.remove('open');
+    });
+    bar.appendChild(dashBtn);
 
     this.addElement(bar);
   }
@@ -462,24 +476,16 @@ export class UI {
     const maxHealth = parseInt((document.getElementById('cc-health') as HTMLInputElement).value);
     const hungerRate = parseFloat((document.getElementById('cc-hunger') as HTMLInputElement).value);
     const reproductionRate = parseFloat((document.getElementById('cc-repro') as HTMLInputElement).value);
-    const diet = (document.getElementById('cc-diet') as HTMLSelectElement).value as CreatureTemplate['diet'];
-    const behavior = (document.getElementById('cc-behavior') as HTMLSelectElement).value as CreatureTemplate['behavior'];
+    const diet = (document.getElementById('cc-diet') as HTMLSelectElement).value as CreatureConfig['diet'];
+    const behavior = (document.getElementById('cc-behavior') as HTMLSelectElement).value as CreatureConfig['behavior'];
 
-    const template: CreatureTemplate = {
+    const config = creatureConfigFromSimple({
       id: `species_${speciesIdCounter++}`,
-      name,
-      color,
-      size,
-      speed,
-      maxHealth,
-      hungerRate,
-      reproductionRate,
-      diet,
-      behavior,
-    };
+      name, color, size, speed, maxHealth, hungerRate, reproductionRate, diet, behavior,
+    });
 
-    this.simEngine.addSpecies(template);
-    this.editor.selectedSpecies = template;
+    this.simEngine.addSpecies(config);
+    this.editor.selectedSpecies = config;
     this.updateSpeciesList();
   }
 
@@ -605,7 +611,7 @@ export class UI {
   }
 
   private addDefaultSpecies(): void {
-    const defaults: Omit<CreatureTemplate, 'id'>[] = [
+    const defaults = [
       {
         name: 'Bunny',
         color: '#ddbbaa',
@@ -614,8 +620,8 @@ export class UI {
         maxHealth: 40,
         hungerRate: 1.2,
         reproductionRate: 0.8,
-        diet: 'herbivore',
-        behavior: 'passive',
+        diet: 'herbivore' as const,
+        behavior: 'passive' as const,
       },
       {
         name: 'Wolf',
@@ -625,8 +631,8 @@ export class UI {
         maxHealth: 120,
         hungerRate: 0.8,
         reproductionRate: 0.3,
-        diet: 'carnivore',
-        behavior: 'aggressive',
+        diet: 'carnivore' as const,
+        behavior: 'aggressive' as const,
       },
       {
         name: 'Cow',
@@ -636,14 +642,14 @@ export class UI {
         maxHealth: 200,
         hungerRate: 0.6,
         reproductionRate: 0.4,
-        diet: 'herbivore',
-        behavior: 'neutral',
+        diet: 'herbivore' as const,
+        behavior: 'neutral' as const,
       },
     ];
 
     for (const d of defaults) {
-      const template: CreatureTemplate = { ...d, id: `species_${speciesIdCounter++}` };
-      this.simEngine.addSpecies(template);
+      const config = creatureConfigFromSimple({ ...d, id: `species_${speciesIdCounter++}` });
+      this.simEngine.addSpecies(config);
     }
 
     this.editor.selectedSpecies = this.simEngine.species[0];

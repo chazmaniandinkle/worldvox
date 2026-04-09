@@ -1,20 +1,15 @@
-export interface CreatureTemplate {
-  id: string;
-  name: string;
-  color: string;       // hex, e.g. '#ff8844'
-  size: number;        // 0.3 – 2.0
-  speed: number;       // blocks per second
-  maxHealth: number;
-  hungerRate: number;  // hunger units per second
-  reproductionRate: number; // probability per check
-  diet: 'herbivore' | 'carnivore' | 'omnivore';
-  behavior: 'passive' | 'aggressive' | 'neutral';
-}
+import { CreatureConfig } from '../simulation/SimConfig';
+
+/** @deprecated Use CreatureConfig from SimConfig */
+export type CreatureTemplate = CreatureConfig;
 
 export type CreatureState = 'idle' | 'wandering' | 'seeking_food' | 'fleeing' | 'dead';
 
 export class Creature {
-  template: CreatureTemplate;
+  config: CreatureConfig;
+  /** @deprecated Use .config */
+  get template(): CreatureConfig { return this.config; }
+
   x: number;
   y: number;
   z: number;
@@ -26,14 +21,14 @@ export class Creature {
   state: CreatureState;
   idleTimer: number;
   alive: boolean;
-  facing: number; // radians, 0 = +Z direction
+  facing: number;
 
-  constructor(template: CreatureTemplate, x: number, y: number, z: number) {
-    this.template = template;
+  constructor(config: CreatureConfig, x: number, y: number, z: number) {
+    this.config = config;
     this.x = x;
     this.y = y;
     this.z = z;
-    this.health = template.maxHealth;
+    this.health = config.maxHealth;
     this.hunger = 0;
     this.age = 0;
     this.targetX = x;
