@@ -6,6 +6,7 @@ import { CreatureTemplate } from '../creatures/Creature';
 import { CameraController, CameraSettings } from '../camera/CameraController';
 import { CreatureRenderer } from '../creatures/CreatureRenderer';
 import { Biome, BIOME_INFO } from '../world/TerrainGenerator';
+import { ThemeManager } from './themes';
 import type { WorldSize } from '../main';
 
 let speciesIdCounter = 0;
@@ -16,6 +17,7 @@ export class UI {
   private world: World;
   private cameraController: CameraController;
   private creatureRenderer: CreatureRenderer;
+  private themeManager: ThemeManager;
   private onNewWorld: (biome: Biome, seed?: number, size?: WorldSize) => void;
   private speciesListEl!: HTMLElement;
   private statsEl!: HTMLElement;
@@ -32,6 +34,7 @@ export class UI {
     world: World,
     cameraController: CameraController,
     creatureRenderer: CreatureRenderer,
+    themeManager: ThemeManager,
     onNewWorld: (biome: Biome, seed?: number, size?: WorldSize) => void,
   ) {
     this.editor = editor;
@@ -39,6 +42,7 @@ export class UI {
     this.world = world;
     this.cameraController = cameraController;
     this.creatureRenderer = creatureRenderer;
+    this.themeManager = themeManager;
     this.onNewWorld = onNewWorld;
     this.createToolbar();
     this.createBlockPalette();
@@ -227,6 +231,12 @@ export class UI {
     const s = this.cameraController.settings;
 
     panel.innerHTML = `
+      <h3>Theme</h3>
+      <div class="theme-grid" id="st-theme-grid"></div>
+      <button class="btn-create" id="st-export-theme" style="margin-bottom:6px;font-size:11px;padding:6px">Export Theme JSON</button>
+      <button class="btn-create" id="st-import-theme" style="margin-bottom:10px;font-size:11px;padding:6px">Import Theme JSON</button>
+
+      <div class="panel-sep"></div>
       <h3>Controls</h3>
 
       <label>Two-finger scroll</label>
@@ -276,7 +286,46 @@ export class UI {
 
     this.addElement(panel);
 
-    // Wire everything up
+    // ─── Theme picker ───
+    const themeGrid = panel.querySelector('#st-theme-grid') as HTMLElement;
+    const renderThemeGrid = () => {
+      themeGrid.innerHTML = '';
+      for (const t of this.themeManager.listThemes()) {
+        const opt = document.createElement('div');
+        opt.className = 'theme-option' + (t.id === this.themeManager.current.id ? ' active' : '');
+        opt.innerHTML = `<div class="theme-option-name">${t.name}</div><div class="theme-option-desc">${t.description}</div>`;
+        opt.addEventListener('click', () => {
+          this.themeManager.apply(t.id);
+          renderThemeGrid();
+        });
+        themeGrid.appendChild(opt);
+      }
+    };
+    renderThemeGrid();
+
+    panel.querySelector('#st-export-theme')!.addEventListener('click', () => {
+      const json = this.themeManager.exportTheme();
+      navigator.clipboard.writeText(json).then(() => {
+        const btn = panel.querySelector('#st-export-theme') as HTMLElement;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Export Theme JSON'; }, 1500);
+      });
+    });
+
+    panel.querySelector('#st-import-theme')!.addEventListener('click', () => {
+      const json = prompt('Paste theme JSON:');
+      if (json) {
+        const id = this.themeManager.importTheme(json);
+        if (id) {
+          this.themeManager.apply(id);
+          renderThemeGrid();
+        } else {
+          alert('Invalid theme JSON');
+        }
+      }
+    });
+
+    // ─── Wire everything up ───
     const get = <T extends HTMLElement>(id: string) => panel.querySelector(`#${id}`) as T;
 
     get<HTMLSelectElement>('st-scroll-action').addEventListener('change', (e) => {

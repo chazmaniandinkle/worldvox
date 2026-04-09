@@ -6,9 +6,9 @@
 
 body {
   overflow: hidden;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: var(--wv-font);
   background: #1a1a2e;
-  color: #e0e0e0;
+  color: var(--wv-text);
 }
 
 #app {
@@ -27,36 +27,39 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 4px;
-  padding: 6px;
-  background: rgba(20, 20, 40, 0.9);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 0;
+  padding: 4px;
+  background: var(--wv-panel-bg);
+  background-image: var(--wv-panel-bg-pattern);
+  border-radius: var(--wv-panel-radius);
+  border: var(--wv-panel-border);
+  box-shadow: var(--wv-panel-shadow);
   z-index: 100;
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--wv-panel-backdrop);
 }
 
 .toolbar button {
   padding: 8px 14px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #ccc;
+  border: var(--wv-btn-border);
+  border-radius: var(--wv-btn-radius);
+  background: var(--wv-btn-bg);
+  color: var(--wv-btn-text);
   cursor: pointer;
+  font-family: var(--wv-font);
   font-size: 13px;
   transition: all 0.15s;
   white-space: nowrap;
 }
 
 .toolbar button:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: white;
+  background: var(--wv-btn-hover-bg);
+  color: var(--wv-btn-active-text);
 }
 
 .toolbar button.active {
-  background: rgba(100, 140, 255, 0.3);
-  border-color: rgba(100, 140, 255, 0.5);
-  color: white;
+  background: var(--wv-btn-active-bg);
+  border: var(--wv-btn-active-border);
+  color: var(--wv-btn-active-text);
 }
 
 /* ─── Block Palette ─── */
@@ -68,11 +71,13 @@ canvas {
   display: none;
   gap: 4px;
   padding: 6px;
-  background: rgba(20, 20, 40, 0.9);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--wv-panel-bg);
+  background-image: var(--wv-panel-bg-pattern);
+  border-radius: var(--wv-panel-radius);
+  border: var(--wv-panel-border);
+  box-shadow: var(--wv-panel-shadow);
   z-index: 100;
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--wv-panel-backdrop);
 }
 
 .block-palette.visible {
@@ -82,9 +87,9 @@ canvas {
 .block-swatch {
   width: 28px;
   height: 28px;
-  border-radius: 4px;
+  border-radius: var(--wv-swatch-radius);
   cursor: pointer;
-  border: 2px solid transparent;
+  border: var(--wv-swatch-border);
   transition: all 0.15s;
   position: relative;
 }
@@ -94,8 +99,8 @@ canvas {
 }
 
 .block-swatch.active {
-  border-color: white;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+  border: var(--wv-swatch-active-border);
+  box-shadow: var(--wv-swatch-active-glow);
 }
 
 .block-swatch[title]::after {
@@ -105,8 +110,9 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   font-size: 10px;
+  font-family: var(--wv-font);
   white-space: nowrap;
-  color: #aaa;
+  color: var(--wv-text-secondary);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
@@ -116,18 +122,20 @@ canvas {
   opacity: 1;
 }
 
-/* ─── Creature Creator Panel ─── */
+/* ─── Creature Creator Panel / Settings Panel ─── */
 .creature-panel {
   position: fixed;
   right: 12px;
   top: 12px;
   width: 260px;
-  background: rgba(20, 20, 40, 0.95);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--wv-panel-bg);
+  background-image: var(--wv-panel-bg-pattern);
+  border-radius: var(--wv-panel-radius);
+  border: var(--wv-panel-border);
+  box-shadow: var(--wv-panel-shadow);
   padding: 16px;
   z-index: 100;
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--wv-panel-backdrop);
   max-height: calc(100vh - 80px);
   overflow-y: auto;
   display: none;
@@ -140,16 +148,18 @@ canvas {
 .creature-panel h3 {
   margin-bottom: 12px;
   font-size: 14px;
-  color: #aaa;
+  font-family: var(--wv-font);
+  color: var(--wv-text-heading);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--wv-label-spacing);
 }
 
 .creature-panel label {
   display: block;
   margin-bottom: 4px;
   font-size: 12px;
-  color: #888;
+  font-family: var(--wv-font);
+  color: var(--wv-text-secondary);
 }
 
 .creature-panel input[type='text'],
@@ -157,10 +167,11 @@ canvas {
   width: 100%;
   padding: 6px 8px;
   margin-bottom: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
+  border: var(--wv-input-border);
+  border-radius: var(--wv-btn-radius);
+  background: var(--wv-input-bg);
+  color: var(--wv-text);
+  font-family: var(--wv-font);
   font-size: 13px;
 }
 
@@ -173,36 +184,37 @@ canvas {
 .creature-panel input[type='range'] {
   width: 100%;
   margin-bottom: 10px;
-  accent-color: #648cff;
+  accent-color: var(--wv-accent);
 }
 
 .creature-panel select {
   width: 100%;
   padding: 6px 8px;
   margin-bottom: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  background: rgba(30, 30, 50, 0.9);
-  color: white;
+  border: var(--wv-input-border);
+  border-radius: var(--wv-btn-radius);
+  background: var(--wv-input-bg);
+  color: var(--wv-text);
+  font-family: var(--wv-font);
   font-size: 13px;
 }
 
 .btn-create {
   width: 100%;
   padding: 10px;
-  border: none;
-  border-radius: 6px;
-  background: rgba(80, 200, 120, 0.3);
-  border: 1px solid rgba(80, 200, 120, 0.5);
-  color: white;
+  border: var(--wv-primary-border);
+  border-radius: var(--wv-btn-radius);
+  background: var(--wv-primary-bg);
+  color: var(--wv-text);
   cursor: pointer;
+  font-family: var(--wv-font);
   font-size: 14px;
   font-weight: 600;
   transition: all 0.15s;
 }
 
 .btn-create:hover {
-  background: rgba(80, 200, 120, 0.45);
+  background: var(--wv-primary-hover-bg);
 }
 
 /* ─── Species List ─── */
@@ -211,19 +223,22 @@ canvas {
   left: 12px;
   top: 12px;
   width: 180px;
-  background: rgba(20, 20, 40, 0.9);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--wv-panel-bg);
+  background-image: var(--wv-panel-bg-pattern);
+  border-radius: var(--wv-panel-radius);
+  border: var(--wv-panel-border);
+  box-shadow: var(--wv-panel-shadow);
   padding: 12px;
   z-index: 100;
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--wv-panel-backdrop);
 }
 
 .species-list h3 {
   font-size: 12px;
-  color: #666;
+  font-family: var(--wv-font);
+  color: var(--wv-text-dim);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--wv-label-spacing);
   margin-bottom: 8px;
 }
 
@@ -232,35 +247,37 @@ canvas {
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  border-radius: 4px;
+  border-radius: var(--wv-btn-radius);
   cursor: pointer;
   margin-bottom: 2px;
   transition: background 0.15s;
 }
 
 .species-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--wv-btn-hover-bg);
 }
 
 .species-item.active {
-  background: rgba(100, 140, 255, 0.2);
+  background: var(--wv-btn-active-bg);
 }
 
 .species-color {
   width: 14px;
   height: 14px;
-  border-radius: 3px;
+  border-radius: var(--wv-swatch-radius);
   flex-shrink: 0;
 }
 
 .species-name {
   font-size: 13px;
+  font-family: var(--wv-font);
   flex: 1;
 }
 
 .species-count {
   font-size: 11px;
-  color: #555;
+  font-family: var(--wv-font);
+  color: var(--wv-text-dim);
 }
 
 /* ─── Bottom Bar ─── */
@@ -273,44 +290,48 @@ canvas {
   align-items: center;
   gap: 12px;
   padding: 8px 16px;
-  background: rgba(20, 20, 40, 0.9);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--wv-panel-bg);
+  background-image: var(--wv-panel-bg-pattern);
+  border-radius: var(--wv-panel-radius);
+  border: var(--wv-panel-border);
+  box-shadow: var(--wv-panel-shadow);
   z-index: 100;
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--wv-panel-backdrop);
   font-size: 13px;
 }
 
 .bottom-bar button {
   padding: 4px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #ccc;
+  border: var(--wv-btn-border);
+  border-radius: var(--wv-btn-radius);
+  background: var(--wv-btn-bg);
+  color: var(--wv-btn-text);
   cursor: pointer;
+  font-family: var(--wv-font);
   font-size: 12px;
   transition: all 0.15s;
 }
 
 .bottom-bar button:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--wv-btn-hover-bg);
 }
 
 .bottom-bar button.active {
-  background: rgba(100, 140, 255, 0.3);
-  border-color: rgba(100, 140, 255, 0.5);
-  color: white;
+  background: var(--wv-btn-active-bg);
+  border: var(--wv-btn-active-border);
+  color: var(--wv-btn-active-text);
 }
 
 .bottom-bar .stat {
-  color: #888;
+  color: var(--wv-text-secondary);
+  font-family: var(--wv-font);
   font-size: 12px;
 }
 
 .bottom-bar .divider {
   width: 1px;
   height: 16px;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--wv-divider);
 }
 
 /* ─── Slider Rows ─── */
@@ -323,7 +344,8 @@ canvas {
 
 .slider-value {
   font-size: 12px;
-  color: #aaa;
+  font-family: var(--wv-font);
+  color: var(--wv-text-secondary);
   min-width: 30px;
   text-align: right;
 }
@@ -331,7 +353,8 @@ canvas {
 /* ─── Brush Info ─── */
 .brush-info {
   font-size: 11px;
-  color: #666;
+  font-family: var(--wv-font);
+  color: var(--wv-text-dim);
   padding: 2px 8px;
 }
 
@@ -343,7 +366,7 @@ canvas {
   background: transparent;
 }
 .creature-panel::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--wv-scrollbar);
   border-radius: 2px;
 }
 
@@ -355,11 +378,11 @@ canvas {
   margin-bottom: 8px;
   cursor: pointer;
   font-size: 13px;
-  color: #ccc;
+  color: var(--wv-text);
 }
 
 .creature-panel input[type='checkbox'] {
-  accent-color: #648cff;
+  accent-color: var(--wv-accent);
   width: 15px;
   height: 15px;
   cursor: pointer;
@@ -371,12 +394,14 @@ canvas {
   left: 12px;
   bottom: 60px;
   width: 240px;
-  background: rgba(20, 20, 40, 0.95);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--wv-panel-bg);
+  background-image: var(--wv-panel-bg-pattern);
+  border-radius: var(--wv-panel-radius);
+  border: var(--wv-panel-border);
+  box-shadow: var(--wv-panel-shadow);
   padding: 14px;
   z-index: 100;
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--wv-panel-backdrop);
   display: none;
 }
 
@@ -394,19 +419,21 @@ canvas {
 .inspect-color {
   width: 20px;
   height: 20px;
-  border-radius: 4px;
+  border-radius: var(--wv-swatch-radius);
   flex-shrink: 0;
 }
 
 .inspect-name {
   font-size: 15px;
+  font-family: var(--wv-font);
   font-weight: 600;
-  color: #eee;
+  color: var(--wv-text);
 }
 
 .inspect-state {
   font-size: 11px;
-  color: #888;
+  font-family: var(--wv-font);
+  color: var(--wv-text-secondary);
   margin-top: 1px;
 }
 
@@ -414,7 +441,7 @@ canvas {
   margin-left: auto;
   background: none;
   border: none;
-  color: #666;
+  color: var(--wv-text-dim);
   font-size: 18px;
   cursor: pointer;
   padding: 0 4px;
@@ -422,7 +449,7 @@ canvas {
 }
 
 .inspect-close:hover {
-  color: #ccc;
+  color: var(--wv-text);
 }
 
 .inspect-bars {
@@ -440,7 +467,8 @@ canvas {
 
 .inspect-bar-label {
   font-size: 11px;
-  color: #888;
+  font-family: var(--wv-font);
+  color: var(--wv-text-secondary);
   width: 42px;
   flex-shrink: 0;
 }
@@ -448,7 +476,7 @@ canvas {
 .inspect-bar-track {
   flex: 1;
   height: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--wv-bar-track);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -461,7 +489,8 @@ canvas {
 
 .inspect-bar-val {
   font-size: 11px;
-  color: #aaa;
+  font-family: var(--wv-font);
+  color: var(--wv-text-secondary);
   min-width: 45px;
   text-align: right;
 }
@@ -476,14 +505,15 @@ canvas {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
+  font-family: var(--wv-font);
 }
 
 .inspect-stat span:first-child {
-  color: #666;
+  color: var(--wv-text-dim);
 }
 
 .inspect-stat span:last-child {
-  color: #bbb;
+  color: var(--wv-text-secondary);
 }
 
 /* ─── World Picker ─── */
@@ -491,7 +521,7 @@ canvas {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(10, 10, 25, 0.97);
+  background: var(--wv-picker-overlay);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -501,15 +531,17 @@ canvas {
 
 .picker-title {
   font-size: 36px;
+  font-family: var(--wv-font);
   font-weight: 700;
-  color: #eee;
+  color: var(--wv-text);
   margin-bottom: 4px;
   letter-spacing: 2px;
 }
 
 .picker-subtitle {
   font-size: 14px;
-  color: #666;
+  font-family: var(--wv-font);
+  color: var(--wv-text-dim);
   margin-bottom: 32px;
 }
 
@@ -521,24 +553,25 @@ canvas {
 
 .picker-size-btn {
   padding: 6px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #999;
+  border: var(--wv-btn-border);
+  border-radius: var(--wv-btn-radius);
+  background: var(--wv-btn-bg);
+  color: var(--wv-btn-text);
   cursor: pointer;
+  font-family: var(--wv-font);
   font-size: 13px;
   transition: all 0.15s;
 }
 
 .picker-size-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ccc;
+  background: var(--wv-btn-hover-bg);
+  color: var(--wv-text);
 }
 
 .picker-size-btn.active {
-  background: rgba(100, 140, 255, 0.2);
-  border-color: rgba(100, 140, 255, 0.4);
-  color: white;
+  background: var(--wv-btn-active-bg);
+  border: var(--wv-btn-active-border);
+  color: var(--wv-btn-active-text);
 }
 
 .picker-grid {
@@ -549,9 +582,9 @@ canvas {
 }
 
 .picker-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  background: var(--wv-picker-card-bg);
+  border: var(--wv-picker-card-border);
+  border-radius: var(--wv-panel-radius);
   padding: 18px 14px;
   text-align: center;
   cursor: pointer;
@@ -560,8 +593,8 @@ canvas {
 }
 
 .picker-card:hover {
-  background: rgba(100, 140, 255, 0.12);
-  border-color: rgba(100, 140, 255, 0.3);
+  background: var(--wv-picker-card-hover-bg);
+  border: var(--wv-picker-card-hover-border);
   transform: translateY(-2px);
 }
 
@@ -572,20 +605,64 @@ canvas {
 
 .picker-name {
   font-size: 14px;
+  font-family: var(--wv-font);
   font-weight: 600;
-  color: #ddd;
+  color: var(--wv-text);
   margin-bottom: 4px;
 }
 
 .picker-desc {
   font-size: 11px;
-  color: #666;
+  font-family: var(--wv-font);
+  color: var(--wv-text-dim);
   line-height: 1.3;
 }
 
 /* ─── Separator ─── */
 .panel-sep {
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--wv-divider);
   margin: 12px 0;
+}
+
+/* ─── Theme Picker (in settings panel) ─── */
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.theme-option {
+  padding: 8px;
+  border: var(--wv-btn-border);
+  border-radius: var(--wv-btn-radius);
+  background: var(--wv-btn-bg);
+  color: var(--wv-btn-text);
+  cursor: pointer;
+  font-family: var(--wv-font);
+  font-size: 11px;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.theme-option:hover {
+  background: var(--wv-btn-hover-bg);
+}
+
+.theme-option.active {
+  background: var(--wv-btn-active-bg);
+  border: var(--wv-btn-active-border);
+  color: var(--wv-btn-active-text);
+}
+
+.theme-option-name {
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.theme-option-desc {
+  font-size: 9px;
+  opacity: 0.7;
 }

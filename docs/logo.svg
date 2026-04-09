@@ -1,0 +1,25 @@
+<svg width="480" viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg">
+<style>
+  .logo-text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-weight: 600; font-size: 64px; letter-spacing: -2px; fill: #1a1a2e; }
+  .logo-vox { fill: #5cb843; }
+  .logo-sub { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-weight: 400; font-size: 14px; letter-spacing: 4px; fill: #6a6a7a; }
+  .vt { opacity: 1; } .vr { opacity: 0.75; } .vl { opacity: 0.55; }
+</style>
+
+<g transform="translate(100, 50)">
+  <g><polygon class="vt" fill="#5cb843" points="0,-15 26,0 0,15 -26,0"/><polygon class="vl" fill="#5cb843" points="-26,0 0,15 0,40 -26,25"/><polygon class="vr" fill="#5cb843" points="26,0 0,15 0,40 26,25"/></g>
+  <g transform="translate(26,15)"><polygon class="vt" fill="#8c6239" points="0,-15 26,0 0,15 -26,0"/><polygon class="vl" fill="#8c6239" points="-26,0 0,15 0,40 -26,25"/><polygon class="vr" fill="#8c6239" points="26,0 0,15 0,40 26,25"/></g>
+  <g transform="translate(-26,15)"><polygon class="vt" fill="#2a5ebd" points="0,-15 26,0 0,15 -26,0"/><polygon class="vl" fill="#2a5ebd" points="-26,0 0,15 0,40 -26,25"/><polygon class="vr" fill="#2a5ebd" points="26,0 0,15 0,40 26,25"/></g>
+  <g transform="translate(0,30)"><polygon class="vt" fill="#808080" points="0,-15 26,0 0,15 -26,0"/><polygon class="vl" fill="#808080" points="-26,0 0,15 0,40 -26,25"/><polygon class="vr" fill="#808080" points="26,0 0,15 0,40 26,25"/></g>
+  <g transform="translate(52,30)"><polygon class="vt" fill="#dbc96a" points="0,-15 26,0 0,15 -26,0"/><polygon class="vl" fill="#dbc96a" points="-26,0 0,15 0,40 -26,25"/><polygon class="vr" fill="#dbc96a" points="26,0 0,15 0,40 26,25"/></g>
+  <g transform="translate(0,-25)"><polygon class="vt" fill="#5cb843" points="0,-15 26,0 0,15 -26,0"/><polygon class="vl" fill="#5cb843" points="-26,0 0,15 0,40 -26,25"/><polygon class="vr" fill="#5cb843" points="26,0 0,15 0,40 26,25"/></g>
+  <g transform="translate(26,-10)"><polygon class="vt" fill="#3e9a2d" points="0,-15 26,0 0,15 -26,0"/><polygon class="vl" fill="#3e9a2d" points="-26,0 0,15 0,40 -26,25"/><polygon class="vr" fill="#3e9a2d" points="26,0 0,15 0,40 26,25"/></g>
+  <g transform="translate(0,-55)"><polygon class="vt" fill="#3e9a2d" points="0,-15 26,0 0,15 -26,0"/><polygon class="vl" fill="#3e9a2d" points="-26,0 0,15 0,40 -26,25"/><polygon class="vr" fill="#3e9a2d" points="26,0 0,15 0,40 26,25"/></g>
+  <g transform="translate(26,-40)"><polygon class="vt" fill="#73502a" points="0,-15 26,0 0,15 -26,0"/><polygon class="vl" fill="#73502a" points="-26,0 0,15 0,40 -26,25"/><polygon class="vr" fill="#73502a" points="26,0 0,15 0,40 26,25"/></g>
+  <g transform="translate(-26,-10)"><polygon class="vt" fill="#e0e2ea" points="0,-15 26,0 0,15 -26,0"/><polygon class="vl" fill="#e0e2ea" points="-26,0 0,15 0,40 -26,25"/><polygon class="vr" fill="#e0e2ea" points="26,0 0,15 0,40 26,25"/></g>
+  <g transform="translate(52,0)"><polygon class="vt" fill="#e84a10" points="0,-15 26,0 0,15 -26,0"/><polygon class="vl" fill="#e84a10" points="-26,0 0,15 0,40 -26,25"/><polygon class="vr" fill="#e84a10" points="26,0 0,15 0,40 26,25"/></g>
+</g>
+
+<text x="230" y="130" class="logo-text">World<tspan class="logo-vox">Vox</tspan></text>
+<text x="234" y="157" class="logo-sub">SHAPE WORLDS. GROW LIFE. WATCH IT BURN.</text>
+</svg>

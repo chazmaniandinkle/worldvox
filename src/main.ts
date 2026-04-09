@@ -7,6 +7,10 @@ import { MapEditor } from './editor/MapEditor';
 import { SimEngine } from './simulation/SimEngine';
 import { CreatureRenderer } from './creatures/CreatureRenderer';
 import { UI } from './ui/UI';
+import { ThemeManager } from './ui/themes';
+
+// ─── Theme ───
+const themeManager = new ThemeManager();
 
 // ─── Renderer ───
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -79,7 +83,7 @@ export function initWorld(biome: Biome, seed?: number, size?: WorldSize): void {
   mapEditor.creatureRenderer = creatureRenderer;
 
   if (ui) ui.dispose();
-  ui = new UI(mapEditor, simEngine, world, cameraController, creatureRenderer, initWorld);
+  ui = new UI(mapEditor, simEngine, world, cameraController, creatureRenderer, themeManager, initWorld);
 }
 
 // ─── Start with picker ───
