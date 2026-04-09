@@ -52,7 +52,7 @@ export class SimEngine {
   spawnCreature(config: CreatureConfig, x: number, z: number): Creature {
     const bx = Math.floor(x);
     const bz = Math.floor(z);
-    const y = this.world.getSolidHeight(bx, bz) + 1;
+    const y = this.world.getGroundHeight(bx, bz) + 1;
     const c = new Creature(config, x, y, z);
     this.creatures.push(c);
     this.eventLog.emit('birth', `${config.name} born`, config.id, { x: bx, z: bz });
@@ -214,8 +214,8 @@ export class SimEngine {
       }
     }
 
-    // Snap Y to terrain
-    const gy = this.world.getSolidHeight(Math.floor(c.x), Math.floor(c.z));
+    // Snap Y to walkable ground (skip trees)
+    const gy = this.world.getGroundHeight(Math.floor(c.x), Math.floor(c.z));
     c.y = gy + 1;
   }
 
@@ -251,7 +251,7 @@ export class SimEngine {
     if (dp.edibleBlocks.length > 0) {
       const bx = Math.floor(c.x);
       const bz = Math.floor(c.z);
-      const gy = this.world.getSolidHeight(bx, bz);
+      const gy = this.world.getGroundHeight(bx, bz);
       const block = this.world.getBlock(bx, gy, bz);
 
       for (const eb of dp.edibleBlocks) {

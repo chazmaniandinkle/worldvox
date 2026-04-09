@@ -79,4 +79,21 @@ export class World {
     }
     return 0;
   }
+
+  /** Like getSolidHeight but skips non-walkable blocks (wood, leaves, fire). */
+  getGroundHeight(x: number, z: number): number {
+    for (let y = this.height - 1; y >= 0; y--) {
+      const block = this.getBlock(x, y, z);
+      if (
+        block !== BlockType.AIR &&
+        block !== BlockType.WATER &&
+        block !== BlockType.WOOD &&
+        block !== BlockType.LEAVES &&
+        block !== BlockType.FIRE
+      ) {
+        return y;
+      }
+    }
+    return 0;
+  }
 }
