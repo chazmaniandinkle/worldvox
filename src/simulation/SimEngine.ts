@@ -372,6 +372,7 @@ export class SimEngine {
     let level = this.world.getWaterLevel(x, y, z);
     if (level <= 0) return;
 
+    // ── 1. Gravity: always try to fall first ──
     if (y > 0) {
       const below = this.world.getBlock(x, y - 1, z);
       if (below === BlockType.FIRE) {
@@ -407,17 +408,47 @@ export class SimEngine {
       }
     }
 
-    if (level <= 1) return;
+    // ── 2. Lateral: flow toward edges and equalize ──
+    if (level <= 0) return;
+
     const dirs: [number, number][] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
     for (let i = dirs.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
     }
+
+    // First pass: aggressively flow toward drop-offs (neighbor has air below)
     for (const [dx, dz] of dirs) {
       if (level <= 1) break;
       const nx = x + dx;
       const nz = z + dz;
       const nb = this.world.getBlock(nx, y, nz);
+      if (nb !== BlockType.AIR && nb !== BlockType.WATER) continue;
+      // Check if this neighbor is a drop-off
+      if (y > 0) {
+        const belowNeighbor = this.world.getBlock(nx, y - 1, nz);
+        if (belowNeighbor === BlockType.AIR || belowNeighbor === BlockType.WATER) {
+          const nLevel = nb === BlockType.WATER ? this.world.getWaterLevel(nx, y, nz) : 0;
+          // Pour aggressively toward the edge — transfer half our water
+          const transfer = Math.max(1, Math.floor((level - nLevel) / 2));
+          if (transfer > 0 && nLevel + transfer <= MAX_WATER_LEVEL) {
+            this.world.setWaterLevel(nx, y, nz, nLevel + transfer);
+            this.world.setWaterLevel(x, y, z, level - transfer);
+            level -= transfer;
+            this.onWorldEdit?.(nx, y, nz);
+            this.onWorldEdit?.(x, y, z);
+          }
+        }
+      }
+    }
+
+    // Second pass: normal equalization with all neighbors
+    for (const [dx, dz] of dirs) {
+      if (level <= 0) break;
+      const nx = x + dx;
+      const nz = z + dz;
+      const nb = this.world.getBlock(nx, y, nz);
+
       if (nb === BlockType.FIRE) {
         this.world.setBlock(nx, y, nz, BlockType.AIR);
         this.world.setWaterLevel(x, y, z, level - 1);
@@ -434,14 +465,23 @@ export class SimEngine {
         this.onWorldEdit?.(x, y, z);
         continue;
       }
+
       if (nb !== BlockType.AIR && nb !== BlockType.WATER) continue;
       const nLevel = nb === BlockType.WATER ? this.world.getWaterLevel(nx, y, nz) : 0;
-      if (nLevel < level - 1) {
-        this.world.setWaterLevel(nx, y, nz, nLevel + 1);
-        this.world.setWaterLevel(x, y, z, level - 1);
-        level--;
-        this.onWorldEdit?.(nx, y, nz);
-        this.onWorldEdit?.(x, y, z);
+
+      // Flow when ANY difference exists (not just diff > 1)
+      if (nLevel < level) {
+        // Transfer half the difference (at least 1) for faster equalization
+        const transfer = Math.max(1, Math.floor((level - nLevel) / 2));
+        // Don't over-equalize: new levels shouldn't invert the gradient
+        const actualTransfer = Math.min(transfer, level - 1);
+        if (actualTransfer > 0) {
+          this.world.setWaterLevel(nx, y, nz, nLevel + actualTransfer);
+          this.world.setWaterLevel(x, y, z, level - actualTransfer);
+          level -= actualTransfer;
+          this.onWorldEdit?.(nx, y, nz);
+          this.onWorldEdit?.(x, y, z);
+        }
       }
     }
   }
@@ -505,8 +545,8 @@ export class SimEngine {
       }
     }
 
-    // Lateral flow — slower than water: only transfer if level diff >= 2
-    if (level <= 2) return;
+    // Lateral flow — slower than water but still flows properly
+    if (level <= 1) return;
 
     const dirs: [number, number][] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
     for (let i = dirs.length - 1; i > 0; i--) {
@@ -514,13 +554,36 @@ export class SimEngine {
       [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
     }
 
+    // Priority: flow toward drop-offs
     for (const [dx, dz] of dirs) {
-      if (level <= 2) break;
+      if (level <= 1) break;
+      const nx = x + dx;
+      const nz = z + dz;
+      const nb = this.world.getBlock(nx, y, nz);
+      if (nb !== BlockType.AIR && nb !== BlockType.LAVA) continue;
+      if (y > 0) {
+        const belowN = this.world.getBlock(nx, y - 1, nz);
+        if (belowN === BlockType.AIR || belowN === BlockType.LAVA) {
+          const nLevel = nb === BlockType.LAVA ? this.world.getLavaLevel(nx, y, nz) : 0;
+          const transfer = Math.max(1, Math.floor((level - nLevel) / 3));
+          if (transfer > 0 && nLevel + transfer <= MAX_FLUID_LEVEL) {
+            this.world.setLavaLevel(nx, y, nz, nLevel + transfer);
+            this.world.setLavaLevel(x, y, z, level - transfer);
+            level -= transfer;
+            this.onWorldEdit?.(nx, y, nz);
+            this.onWorldEdit?.(x, y, z);
+          }
+        }
+      }
+    }
+
+    // Normal equalization
+    for (const [dx, dz] of dirs) {
+      if (level <= 1) break;
       const nx = x + dx;
       const nz = z + dz;
       const nb = this.world.getBlock(nx, y, nz);
 
-      // Lava + water = stone
       if (nb === BlockType.WATER) {
         this.world.setBlock(nx, y, nz, BlockType.STONE);
         this.world.setLavaLevel(x, y, z, level - 1);
@@ -530,7 +593,6 @@ export class SimEngine {
         continue;
       }
 
-      // Ignite flammable neighbors
       if (isFlammable(nb)) {
         this.world.setBlock(nx, y, nz, BlockType.FIRE);
         this.onWorldEdit?.(nx, y, nz);
@@ -540,12 +602,17 @@ export class SimEngine {
       if (nb !== BlockType.AIR && nb !== BlockType.LAVA && nb !== BlockType.FIRE) continue;
 
       const nLevel = nb === BlockType.LAVA ? this.world.getLavaLevel(nx, y, nz) : 0;
-      if (nLevel < level - 2) {
-        this.world.setLavaLevel(nx, y, nz, nLevel + 1);
-        this.world.setLavaLevel(x, y, z, level - 1);
-        level--;
-        this.onWorldEdit?.(nx, y, nz);
-        this.onWorldEdit?.(x, y, z);
+      // Lava needs diff >= 2 for lateral equalization (thicker than water)
+      if (nLevel < level - 1) {
+        const transfer = Math.max(1, Math.floor((level - nLevel) / 3));
+        const actual = Math.min(transfer, level - 1);
+        if (actual > 0) {
+          this.world.setLavaLevel(nx, y, nz, nLevel + actual);
+          this.world.setLavaLevel(x, y, z, level - actual);
+          level -= actual;
+          this.onWorldEdit?.(nx, y, nz);
+          this.onWorldEdit?.(x, y, z);
+        }
       }
     }
 
