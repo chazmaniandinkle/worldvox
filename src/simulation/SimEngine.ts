@@ -1,4 +1,4 @@
-import { World, MAX_WATER_LEVEL } from '../world/World';
+import { World, MAX_WATER_LEVEL, MAX_FLUID_LEVEL } from '../world/World';
 import { BlockType, isSolid, isFlammable } from '../world/BlockTypes';
 import { Creature } from '../creatures/Creature';
 import { placeTree } from '../world/TerrainGenerator';
@@ -31,6 +31,7 @@ export class SimEngine {
   private treeSpreadTimer = 0;
   private vegScanTimer = 0;
   private waterTimer = 0;
+  private lavaTimer = 0;
   private fireTimer = 0;
   private recordTimer = 0;
   private recordInterval = 2; // seconds between data samples
@@ -118,6 +119,12 @@ export class SimEngine {
     if (this.waterTimer >= e.water.tickInterval) {
       this.waterTimer = 0;
       this.simulateWater();
+    }
+
+    this.lavaTimer += sdt;
+    if (this.lavaTimer >= e.lava.tickInterval) {
+      this.lavaTimer = 0;
+      this.simulateLava();
     }
 
     this.fireTimer += sdt;
@@ -435,6 +442,127 @@ export class SimEngine {
         level--;
         this.onWorldEdit?.(nx, y, nz);
         this.onWorldEdit?.(x, y, z);
+      }
+    }
+  }
+
+  // ─── Lava flow (slower than water, ignites flammable blocks) ───
+
+  private simulateLava(): void {
+    for (let y = this.world.height - 1; y >= 0; y--) {
+      for (let x = 0; x < this.world.width; x++) {
+        for (let z = 0; z < this.world.depth; z++) {
+          if (this.world.getBlock(x, y, z) !== BlockType.LAVA) continue;
+          this.flowLavaBlock(x, y, z);
+        }
+      }
+    }
+  }
+
+  private flowLavaBlock(x: number, y: number, z: number): void {
+    let level = this.world.getLavaLevel(x, y, z);
+    if (level <= 0) return;
+
+    // Gravity
+    if (y > 0) {
+      const below = this.world.getBlock(x, y - 1, z);
+
+      // Lava + water = stone (consumes lava)
+      if (below === BlockType.WATER) {
+        this.world.setBlock(x, y - 1, z, BlockType.STONE);
+        this.world.setLavaLevel(x, y, z, level - 1);
+        this.onWorldEdit?.(x, y - 1, z);
+        this.onWorldEdit?.(x, y, z);
+        return;
+      }
+
+      // Lava ignites flammable blocks below
+      if (isFlammable(below)) {
+        this.world.setBlock(x, y - 1, z, BlockType.FIRE);
+        this.onWorldEdit?.(x, y - 1, z);
+      }
+
+      const belowNow = this.world.getBlock(x, y - 1, z);
+      if (belowNow === BlockType.AIR || belowNow === BlockType.FIRE) {
+        this.world.setLavaLevel(x, y - 1, z, Math.min(MAX_FLUID_LEVEL, level));
+        this.world.setLavaLevel(x, y, z, 0);
+        this.onWorldEdit?.(x, y, z);
+        this.onWorldEdit?.(x, y - 1, z);
+        return;
+      }
+
+      if (belowNow === BlockType.LAVA) {
+        const belowLevel = this.world.getLavaLevel(x, y - 1, z);
+        if (belowLevel < MAX_FLUID_LEVEL) {
+          const transfer = Math.min(level, MAX_FLUID_LEVEL - belowLevel);
+          this.world.setLavaLevel(x, y - 1, z, belowLevel + transfer);
+          this.world.setLavaLevel(x, y, z, level - transfer);
+          this.onWorldEdit?.(x, y, z);
+          this.onWorldEdit?.(x, y - 1, z);
+          level -= transfer;
+          if (level <= 0) return;
+        }
+      }
+    }
+
+    // Lateral flow — slower than water: only transfer if level diff >= 2
+    if (level <= 2) return;
+
+    const dirs: [number, number][] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    for (let i = dirs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+    }
+
+    for (const [dx, dz] of dirs) {
+      if (level <= 2) break;
+      const nx = x + dx;
+      const nz = z + dz;
+      const nb = this.world.getBlock(nx, y, nz);
+
+      // Lava + water = stone
+      if (nb === BlockType.WATER) {
+        this.world.setBlock(nx, y, nz, BlockType.STONE);
+        this.world.setLavaLevel(x, y, z, level - 1);
+        level--;
+        this.onWorldEdit?.(nx, y, nz);
+        this.onWorldEdit?.(x, y, z);
+        continue;
+      }
+
+      // Ignite flammable neighbors
+      if (isFlammable(nb)) {
+        this.world.setBlock(nx, y, nz, BlockType.FIRE);
+        this.onWorldEdit?.(nx, y, nz);
+        continue;
+      }
+
+      if (nb !== BlockType.AIR && nb !== BlockType.LAVA && nb !== BlockType.FIRE) continue;
+
+      const nLevel = nb === BlockType.LAVA ? this.world.getLavaLevel(nx, y, nz) : 0;
+      if (nLevel < level - 2) {
+        this.world.setLavaLevel(nx, y, nz, nLevel + 1);
+        this.world.setLavaLevel(x, y, z, level - 1);
+        level--;
+        this.onWorldEdit?.(nx, y, nz);
+        this.onWorldEdit?.(x, y, z);
+      }
+    }
+
+    // Lava damages nearby creatures
+    for (const c of this.creatures) {
+      if (!c.alive) continue;
+      const dx = c.x - x;
+      const dy = c.y - y;
+      const dz2 = c.z - z;
+      if (dx * dx + dy * dy + dz2 * dz2 < 2.5) {
+        c.health -= 8;
+        if (c.state !== 'fleeing') {
+          const angle = Math.atan2(dz2, dx);
+          c.targetX = Math.max(1, Math.min(this.world.width - 2, c.x + Math.cos(angle) * 10));
+          c.targetZ = Math.max(1, Math.min(this.world.depth - 2, c.z + Math.sin(angle) * 10));
+          c.state = 'fleeing';
+        }
       }
     }
   }

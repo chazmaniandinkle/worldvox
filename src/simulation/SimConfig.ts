@@ -73,6 +73,9 @@ export interface EnvironmentParams {
   water: {
     tickInterval: number;
   };
+  lava: {
+    tickInterval: number;
+  };
   fire: {
     tickInterval: number;
     spreadChance: number;
@@ -188,6 +191,7 @@ export const DEFAULT_ENVIRONMENT: EnvironmentParams = {
   grassRegrowth: { checksPerTick: 50, requiresAdjacentGrass: true, tickInterval: 2 },
   treeSpread: { attemptsPerTick: 10, chance: 0.3, range: 5, tickInterval: 5 },
   water: { tickInterval: 0.15 },
+  lava: { tickInterval: 0.6 },
   fire: { tickInterval: 0.5, spreadChance: 0.25, burnoutChance: 0.15, damageRange: 2, damagePerTick: 3 },
 };
 

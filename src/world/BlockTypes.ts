@@ -52,11 +52,15 @@ export const PAINTABLE_BLOCKS = [
 ];
 
 export function isTransparent(type: BlockType): boolean {
-  return type === BlockType.AIR || type === BlockType.WATER || type === BlockType.FIRE;
+  return type === BlockType.AIR || type === BlockType.WATER || type === BlockType.LAVA || type === BlockType.FIRE;
+}
+
+export function isFluid(type: BlockType): boolean {
+  return type === BlockType.WATER || type === BlockType.LAVA;
 }
 
 export function isSolid(type: BlockType): boolean {
-  return type !== BlockType.AIR && type !== BlockType.WATER && type !== BlockType.FIRE;
+  return type !== BlockType.AIR && type !== BlockType.WATER && type !== BlockType.LAVA && type !== BlockType.FIRE;
 }
 
 export function isFlammable(type: BlockType): boolean {

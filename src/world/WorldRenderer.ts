@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { World, MAX_WATER_LEVEL } from './World';
-import { BlockType, BLOCK_COLORS, isTransparent } from './BlockTypes';
+import { World, MAX_FLUID_LEVEL } from './World';
+import { BlockType, BLOCK_COLORS, isTransparent, isFluid } from './BlockTypes';
 
 const CHUNK_SIZE = 16;
 
@@ -23,9 +23,11 @@ export class WorldRenderer {
   private world: World;
   private opaqueChunks = new Map<string, THREE.Mesh>();
   private waterChunks = new Map<string, THREE.Mesh>();
+  private lavaChunks = new Map<string, THREE.Mesh>();
   private dirtyChunks = new Set<string>();
   private opaqueMaterial: THREE.MeshLambertMaterial;
   private waterMaterial: THREE.MeshLambertMaterial;
+  private lavaMaterial: THREE.MeshLambertMaterial;
 
   constructor(scene: THREE.Scene, world: World) {
     this.scene = scene;
@@ -35,6 +37,13 @@ export class WorldRenderer {
       vertexColors: true,
       transparent: true,
       opacity: 0.55,
+      side: THREE.DoubleSide,
+    });
+    this.lavaMaterial = new THREE.MeshLambertMaterial({
+      vertexColors: true,
+      emissive: new THREE.Color(0.4, 0.1, 0.0),
+      transparent: true,
+      opacity: 0.9,
       side: THREE.DoubleSide,
     });
     this.buildAll();
@@ -63,7 +72,7 @@ export class WorldRenderer {
 
   /** Collect all opaque chunk meshes (used for raycasting). */
   getChunkMeshes(): THREE.Mesh[] {
-    return [...this.opaqueChunks.values(), ...this.waterChunks.values()];
+    return [...this.opaqueChunks.values(), ...this.waterChunks.values(), ...this.lavaChunks.values()];
   }
 
   private buildAll(): void {
@@ -83,6 +92,7 @@ export class WorldRenderer {
     const [cx, cy, cz] = key.split(',').map(Number);
     this.removeMesh(this.opaqueChunks, key);
     this.removeMesh(this.waterChunks, key);
+    this.removeMesh(this.lavaChunks, key);
 
     const opaquePos: number[] = [];
     const opaqueNorm: number[] = [];
@@ -93,6 +103,11 @@ export class WorldRenderer {
     const waterNorm: number[] = [];
     const waterCol: number[] = [];
     const waterIdx: number[] = [];
+
+    const lavaPos: number[] = [];
+    const lavaNorm: number[] = [];
+    const lavaCol: number[] = [];
+    const lavaIdx: number[] = [];
 
     const sx = cx * CHUNK_SIZE;
     const sy = cy * CHUNK_SIZE;
@@ -110,16 +125,18 @@ export class WorldRenderer {
           const block = this.world.getBlock(wx, wy, wz);
           if (block === BlockType.AIR) continue;
 
+          const fluid = isFluid(block);
           const isWater = block === BlockType.WATER;
+          const isLava = block === BlockType.LAVA;
           const color = BLOCK_COLORS[block] ?? [1, 0, 1];
-          const wHeight = isWater
-            ? this.world.getWaterLevel(wx, wy, wz) / MAX_WATER_LEVEL
+          const fluidHeight = fluid
+            ? this.world.getFluidLevel(wx, wy, wz) / MAX_FLUID_LEVEL
             : 1;
 
-          const pos = isWater ? waterPos : opaquePos;
-          const norm = isWater ? waterNorm : opaqueNorm;
-          const col = isWater ? waterCol : opaqueCol;
-          const idx = isWater ? waterIdx : opaqueIdx;
+          const pos = isWater ? waterPos : isLava ? lavaPos : opaquePos;
+          const norm = isWater ? waterNorm : isLava ? lavaNorm : opaqueNorm;
+          const col = isWater ? waterCol : isLava ? lavaCol : opaqueCol;
+          const idx = isWater ? waterIdx : isLava ? lavaIdx : opaqueIdx;
 
           for (const face of FACES) {
             const nx = wx + face.dir[0];
@@ -127,13 +144,14 @@ export class WorldRenderer {
             const nz = wz + face.dir[2];
             const neighbor = this.world.getBlock(nx, ny, nz);
 
-            if (isWater) {
-              // Show face if neighbor is air, or if neighbor is water with a different level (top face only)
+            if (fluid) {
+              // Show face if neighbor is air or a different fluid type
               if (neighbor === BlockType.AIR) {
                 // show
-              } else if (neighbor === BlockType.WATER && face.dir[1] === 1) {
-                // Show top face if above water has lower level or is air
-                continue; // top face of water covered by water above — skip
+              } else if (neighbor === block && face.dir[1] === 1) {
+                continue; // same fluid above — skip top face
+              } else if (neighbor !== block && isTransparent(neighbor)) {
+                // show (e.g. water face next to lava)
               } else {
                 continue;
               }
@@ -143,8 +161,7 @@ export class WorldRenderer {
 
             const vi = pos.length / 3;
             for (const v of face.vertices) {
-              // Scale top vertices of water blocks by water level
-              const vy = (isWater && v[1] === 1) ? wHeight : v[1];
+              const vy = (fluid && v[1] === 1) ? fluidHeight : v[1];
               pos.push(wx + v[0], wy + vy, wz + v[2]);
               norm.push(face.dir[0], face.dir[1], face.dir[2]);
               col.push(color[0], color[1], color[2]);
@@ -166,6 +183,13 @@ export class WorldRenderer {
       mesh.renderOrder = 1;
       this.scene.add(mesh);
       this.waterChunks.set(key, mesh);
+    }
+
+    if (lavaPos.length > 0) {
+      const mesh = this.buildMesh(lavaPos, lavaNorm, lavaCol, lavaIdx, this.lavaMaterial);
+      mesh.renderOrder = 1;
+      this.scene.add(mesh);
+      this.lavaChunks.set(key, mesh);
     }
   }
 
