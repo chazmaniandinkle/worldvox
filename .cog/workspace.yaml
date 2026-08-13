@@ -1,0 +1,9 @@
+workspace:
+  name: worldvox
+  kind: repo
+  owner_intent: >
+    Fluid-dynamics visualization app (TS/Vite).
+  tier: dormant
+  writers:
+    - "none observed"
+  kernel_registration: not-desired
